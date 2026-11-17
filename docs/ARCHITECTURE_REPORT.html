@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>bugjar — architecture deepening report</title>
+<style>
+:root{--bg:#0f1115;--fg:#e6e8ee;--mut:#98a0b3;--line:#2a3040;--card:#171b23;--acc:#7dd3a0;--warn:#e6c07b;--bad:#f08a8a}
+@media (prefers-color-scheme:light){:root{--bg:#f7f8fa;--fg:#1a1d24;--mut:#5b6478;--line:#d7dce6;--card:#fff;--acc:#16794a;--warn:#8a5a00;--bad:#a12626}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+main{max-width:1000px;margin:0 auto;padding:40px 24px 80px}
+h1{font-size:30px;letter-spacing:-.02em;margin:0 0 6px}
+h2{font-size:21px;margin:44px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px}
+p{margin:10px 0}
+code{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:1px 6px;font-size:13px}
+pre{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;overflow:auto;font-size:13px}
+.lead{color:var(--mut);font-size:16px;margin-bottom:28px}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--card);font-weight:600}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin:16px 0}
+.tag{display:inline-block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);border-radius:999px;padding:2px 10px;margin-right:8px}
+.strong{color:var(--acc);border-color:var(--acc)}
+.worth{color:var(--warn);border-color:var(--warn)}
+.spec{color:var(--bad);border-color:var(--bad)}
+.q{font-weight:600;margin-top:16px;margin-bottom:2px}
+.foot{color:var(--mut);font-size:13px;margin-top:44px;border-top:1px solid var(--line);padding-top:16px}
+svg{display:block;max-width:100%;height:auto;margin:12px 0}
+.svgbg{background:var(--card);border:1px solid var(--line);border-radius:8px}
+</style>
+</head>
+<body>
+<main>
+<h1>Architecture deepening report</h1>
+<p class="lead">bugjar 1.0.0 · 2026-11-12 · scope: <code>bugjar/*.py</code> after the review freeze. Method: deletion test, git-history-first reading, ranked candidates, then a grilling loop. This is a design artifact; the executable proof is the golden diff.</p>
+
+<h2>1. Where change actually lands</h2>
+<p>The frozen v1 tree was 6 modules and 1,375 lines. <code>engine.py</code> held 782 of them. Every new behavior in the review log — profile resolution, signal caveats, blob caps, the empty-world guard — landed in that one file. It owned five unrelated concerns: sandbox mechanics, channel semantics, delta debugging, report formatting, and orchestration. Its interface was as large as the implementation it hid. That is the definition of a shallow module.</p>
+<pre>before:  util.py  cassette.py  engine.py(782)  cli.py  __init__.py  __main__.py
+after :  util.py  cassette.py  runner.py  observation.py  minimizer.py
+         report.py  engine.py(344)  cli.py  __init__.py  __main__.py</pre>
+
+<h2>2. Deletion test</h2>
+<p>Would deleting a suspected shallow module concentrate complexity, or just move it? A "yes, concentrates" is the signal to deepen, not to delete.</p>
+<table>
+<tr><th>Module probed</th><th>Delete it and…</th><th>Verdict</th></tr>
+<tr><td><code>engine.py</code></td><td>All five concerns collapse back into one orchestrator. Complexity concentrates, but the file becomes untestable in parts.</td><td>Shallow — split it</td></tr>
+<tr><td><code>cassette.py</code></td><td>Integrity, format, path validation and HMAC must be re-implemented in every caller. Deleting it concentrates a large, dangerous contract into a small interface.</td><td>Already deep — keep</td></tr>
+<tr><td><code>util.py</code></td><td>Canonical JSON, path safety and redaction would be duplicated. Small but genuinely deep.</td><td>Already deep — keep</td></tr>
+<tr><td>A thin "one function per file" adapter</td><td>Nothing is lost; callers just import from one place instead of another. Pure movement.</td><td>Shallow — reject</td></tr>
+</table>
+
+<h2>3. Ranked candidates</h2>
+
+<div class="card">
+<span class="tag strong">Strong</span><strong>Candidate 1 — Runner seam plus four deep modules</strong>
+<p><b>Files:</b> <code>engine.py</code> → <code>runner.py</code>, <code>observation.py</code>, <code>minimizer.py</code>, <code>report.py</code>.</p>
+<p><b>Problem:</b> one module owns five unrelated change drivers. A security fix in process limits sits next to Markdown prose generation. Reviewers cannot reason about locality.</p>
+<p><b>Solution:</b> put every sandbox concern behind <code>runner.execute()</code>, every channel/verdict semantic behind <code>observation</code>, reduction behind <code>minimizer.ddmin</code>, and read-only reporting behind <code>report</code>. <code>engine</code> becomes orchestration only.</p>
+<p><b>Benefits:</b> a test can now target the seam without spawning a process; the attack surface is one module instead of five; each module has one reason to change.</p>
+<p><b>Deletion test:</b> deleting <code>runner.py</code> forces temp dirs, rlimits, process groups, snapshots and blob collection back into three call sites. Complexity concentrates. Deep.</p>
+</div>
+
+<div class="card">
+<span class="tag worth">Worth exploring</span><strong>Candidate 2 — typed Cassette object instead of raw dicts</strong>
+<p><b>Problem:</b> <code>manifest</code> is a dict passed through six functions; a misspelled key fails at runtime, not at load.</p>
+<p><b>Solution:</b> a <code>Cassette</code> dataclass with validated fields and <code>to_manifest()</code>.</p>
+<p><b>Benefit:</b> schema errors become load-time errors.</p>
+<p><b>Why deferred:</b> it changes the module interface, and the brief forbids changing any function of the program. It needs its own release, not a structure-only refactor.</p>
+</div>
+
+<div class="card">
+<span class="tag spec">Speculative</span><strong>Candidate 3 — pluggable Runner implementations</strong>
+<p><b>Problem:</b> replay currently assumes a local POSIX process.</p>
+<p><b>Solution:</b> an abstract Runner with container and remote backends.</p>
+<p><b>Benefit:</b> cross-platform replay.</p>
+<p><b>Why rejected here:</b> deleting the abstraction would cost nothing today. It is a shallow adapter until a second implementation exists. It also contradicts the documented boundary that the network and clock are outside the model.</p>
+</div>
+
+<h2>4. Before / after</h2>
+<div class="svgbg">
+<svg viewBox="0 0 920 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Before architecture">
+<text x="20" y="28" fill="#98a0b3" font-size="14">BEFORE — one shallow orchestrator</text>
+<rect x="40" y="55" width="170" height="46" rx="7" fill="#1d2430" stroke="#7dd3a0"/><text x="60" y="83" fill="#e6e8ee" font-size="13">cli.py</text>
+<rect x="330" y="45" width="260" height="170" rx="9" fill="#2a2030" stroke="#f08a8a"/><text x="350" y="70" fill="#e6e8ee" font-size="14" font-weight="600">engine.py — 782 lines</text>
+<text x="350" y="96" fill="#98a0b3" font-size="12">• snapshot / temp dirs / rlimits</text>
+<text x="350" y="118" fill="#98a0b3" font-size="12">• 7 channels / profiles / manifest</text>
+<text x="350" y="140" fill="#98a0b3" font-size="12">• ddmin reduction</text>
+<text x="350" y="162" fill="#98a0b3" font-size="12">• diff / explain / doctor prose</text>
+<text x="350" y="184" fill="#98a0b3" font-size="12">• run / verify / shrink</text>
+<rect x="700" y="55" width="180" height="46" rx="7" fill="#1d2430" stroke="#7dd3a0"/><text x="718" y="83" fill="#e6e8ee" font-size="13">cassette.py</text>
+<rect x="700" y="125" width="180" height="46" rx="7" fill="#1d2430" stroke="#7dd3a0"/><text x="718" y="153" fill="#e6e8ee" font-size="13">util.py</text>
+<line x1="210" y1="78" x2="330" y2="110" stroke="#98a0b3" stroke-width="2"/>
+<line x1="590" y1="110" x2="700" y2="78" stroke="#98a0b3" stroke-width="2"/>
+<line x1="590" y1="140" x2="700" y2="148" stroke="#98a0b3" stroke-width="2"/>
+</svg>
+</div>
+<div class="svgbg">
+<svg viewBox="0 0 920 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="After architecture">
+<text x="20" y="28" fill="#98a0b3" font-size="14">AFTER — engine delegates across four deep modules</text>
+<rect x="360" y="45" width="200" height="44" rx="7" fill="#1d2430" stroke="#7dd3a0"/><text x="392" y="73" fill="#e6e8ee" font-size="13">cli.py</text>
+<rect x="360" y="115" width="200" height="52" rx="9" fill="#162a20" stroke="#7dd3a0"/><text x="392" y="138" fill="#e6e8ee" font-size="14" font-weight="600">engine.py</text><text x="392" y="156" fill="#98a0b3" font-size="11">orchestration only · 344 lines</text>
+<line x1="460" y1="89" x2="460" y2="115" stroke="#98a0b3" stroke-width="2"/>
+<line x1="460" y1="167" x2="460" y2="195" stroke="#98a0b3" stroke-width="2"/>
+<rect x="20" y="195" width="160" height="62" rx="8" fill="#1d2430" stroke="#7dd3a0"/><text x="36" y="220" fill="#e6e8ee" font-size="13">runner.py</text><text x="36" y="240" fill="#98a0b3" font-size="11">sandbox · limits · blobs</text>
+<rect x="200" y="195" width="170" height="62" rx="8" fill="#1d2430" stroke="#7dd3a0"/><text x="216" y="220" fill="#e6e8ee" font-size="13">observation.py</text><text x="216" y="240" fill="#98a0b3" font-size="11">7 channels · profiles</text>
+<rect x="390" y="195" width="160" height="62" rx="8" fill="#1d2430" stroke="#7dd3a0"/><text x="406" y="220" fill="#e6e8ee" font-size="13">minimizer.py</text><text x="406" y="240" fill="#98a0b3" font-size="11">ddmin · budget</text>
+<rect x="570" y="195" width="150" height="62" rx="8" fill="#1d2430" stroke="#7dd3a0"/><text x="586" y="220" fill="#e6e8ee" font-size="13">report.py</text><text x="586" y="240" fill="#98a0b3" font-size="11">diff · explain · doctor</text>
+<rect x="740" y="195" width="160" height="62" rx="8" fill="#1d2430" stroke="#7dd3a0"/><text x="756" y="220" fill="#e6e8ee" font-size="13">cassette.py</text><text x="756" y="240" fill="#98a0b3" font-size="11">format · integrity · HMAC</text>
+<path d="M100 195 L440 167 M285 195 L450 167 M470 167 L470 195 M645 195 L480 167 M820 195 L490 167" stroke="#98a0b3" stroke-width="1.5" fill="none"/>
+<rect x="330" y="280" width="260" height="34" rx="7" fill="#1d2430" stroke="#7dd3a0"/><text x="350" y="302" fill="#e6e8ee" font-size="12">util.py — canonical JSON · path safety · redaction</text>
+</svg>
+</div>
+
+<h2>5. Grilling loop (one question at a time, recommended answer attached)</h2>
+<div class="card">
+<p class="q">Q: Are you changing behavior and calling it a refactor?</p>
+<p>No. Recommended answer: freeze 34 CLI cases totaling 1,182 lines of scrubbed output, refactor, then require a byte-identical diff. Any behavior change is an automatic rejection. The diff is empty.</p>
+<p class="q">Q: Is <code>runner.py</code> actually deep, or just a renamed bucket?</p>
+<p>Deep. Recommended answer: its interface is one call returning one <code>ExecResult</code>; it hides temp-dir lifecycle, <code>setrlimit</code>, process-group kills, symlink handling, snapshots and content-addressed blob collection. Deleting it forces all of that into three call sites.</p>
+<p class="q">Q: Why keep <code>report.py</code> separate if it only produces text?</p>
+<p>Recommended answer: diff, explain and doctor share flattening, volatile-field filtering and profile comparison. Keeping them together means a schema change has one place to land, and every prose claim can be tied to a field path.</p>
+<p class="q">Q: Did you keep compatibility aliases that are dead code?</p>
+<p>Three, not thirteen: <code>_ddmin</code>, <code>_profile</code>, <code>_snapshot</code>. They exist because the review probes in <code>REVIEW_LOG.md</code> call them by name, and that log must remain executable evidence. They are documented as compatibility aliases, not presented as API.</p>
+<p class="q">Q: What is the strongest objection to this refactor?</p>
+<p>That it is mostly code movement, not a redesign. Correct. The brief forbade changing any function of the program. A structural deepening that preserves a 1,182-line golden matrix byte-for-byte is the largest change that constraint permits.</p>
+</div>
+
+<h2>6. Decision record</h2>
+<table>
+<tr><th>Item</th><th>Decision</th></tr>
+<tr><td>Chosen</td><td>Candidate 1 — Runner seam + four deep modules</td></tr>
+<tr><td>Rejected</td><td>Candidate 3 — single-implementation adapter (deletion test failed)</td></tr>
+<tr><td>Deferred</td><td>Candidate 2 — typed Cassette object (needs an interface change)</td></tr>
+<tr><td>Equivalence proof</td><td><code>golden/v1_baseline.txt</code> vs <code>golden/v2_current.txt</code>: 0 differing lines</td></tr>
+<tr><td>Regression proof</td><td>48/48 unit and integration tests; 23/23 hostile cassettes refused; hygiene 0 findings</td></tr>
+<tr><td>Docs updated</td><td><code>CONTEXT.md</code> D5–D8, <code>adr/0002-runner-seam.md</code></td></tr>
+</table>
+
+<div class="foot">Generated locally, offline. No CDN, no external assets, no tracking. Diagrams are inline SVG. This report is a design artifact; the executable proof is the golden diff and the test output in REVIEW_LOG.md.</div>
+</main>
+</body>
+</html>

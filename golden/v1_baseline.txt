@@ -1,0 +1,1182 @@
+### 01 version :: version
+rc=0
+STDOUT<<
+bugjar 1.0.0
+>>
+STDERR<<
+
+>>
+### 02 run A :: run --root worldA --out a.bugjar --json -- /usr/bin/python3 probe.py
+rc=0
+STDOUT<<
+{
+  "action": "run",
+  "cassette_id": "<ID>",
+  "caveats": 0,
+  "inputs": 10,
+  "observation": {
+    "created": 1,
+    "deleted": 0,
+    "exit_code": 0,
+    "modified": 0,
+    "stderr_bytes": 0,
+    "stdout_bytes": 6
+  },
+  "out": "a.bugjar",
+  "redactions": 0,
+  "signed": false
+}
+>>
+STDERR<<
+
+>>
+### 03 verify A :: verify a.bugjar --json
+rc=0
+STDOUT<<
+{
+  "action": "verify",
+  "cassette": "a.bugjar",
+  "caveats": [],
+  "channels": {
+    "created": {
+      "match": true,
+      "observed": {
+        "result.txt": "3733cd977ff8eb18b987357e22ced99f46097f31ecb239e878ae63760e83e4d5"
+      },
+      "recorded": {
+        "result.txt": "3733cd977ff8eb18b987357e22ced99f46097f31ecb239e878ae63760e83e4d5"
+      }
+    },
+    "deleted": {
+      "match": true,
+      "observed": [],
+      "recorded": []
+    },
+    "exit_code": {
+      "match": true,
+      "observed": 0,
+      "recorded": 0
+    },
+    "modified": {
+      "match": true,
+      "observed": {},
+      "recorded": {}
+    },
+    "stderr": {
+      "match": true,
+      "observed": {
+        "preview": "",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size": 0
+      },
+      "recorded": {
+        "preview": "",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size": 0
+      }
+    },
+    "stdout": {
+      "match": true,
+      "observed": {
+        "preview": "HELLO\n",
+        "sha256": "3b09aeb6f5f5336beb205d7f720371bc927cd46c21922e334d47ba264acb5ba4",
+        "size": 6
+      },
+      "recorded": {
+        "preview": "HELLO\n",
+        "sha256": "3b09aeb6f5f5336beb205d7f720371bc927cd46c21922e334d47ba264acb5ba4",
+        "size": 6
+      }
+    },
+    "witness": {
+      "match": true,
+      "observed": "18e336cb25435b062f74d01eed443499400dc3640ae329705abd73c16509b823",
+      "recorded": "18e336cb25435b062f74d01eed443499400dc3640ae329705abd73c16509b823"
+    }
+  },
+  "integrity": "ok",
+  "profile": "comparable",
+  "reasons": [],
+  "repeats": 1,
+  "verdict": "REPRODUCED"
+}
+>>
+STDERR<<
+
+>>
+### 04 verify A repeat2 :: verify a.bugjar --json --repeat 2
+rc=0
+STDOUT<<
+{
+  "action": "verify",
+  "cassette": "a.bugjar",
+  "caveats": [],
+  "channels": {
+    "created": {
+      "match": true,
+      "observed": {
+        "result.txt": "3733cd977ff8eb18b987357e22ced99f46097f31ecb239e878ae63760e83e4d5"
+      },
+      "recorded": {
+        "result.txt": "3733cd977ff8eb18b987357e22ced99f46097f31ecb239e878ae63760e83e4d5"
+      }
+    },
+    "deleted": {
+      "match": true,
+      "observed": [],
+      "recorded": []
+    },
+    "exit_code": {
+      "match": true,
+      "observed": 0,
+      "recorded": 0
+    },
+    "modified": {
+      "match": true,
+      "observed": {},
+      "recorded": {}
+    },
+    "stderr": {
+      "match": true,
+      "observed": {
+        "preview": "",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size": 0
+      },
+      "recorded": {
+        "preview": "",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size": 0
+      }
+    },
+    "stdout": {
+      "match": true,
+      "observed": {
+        "preview": "HELLO\n",
+        "sha256": "3b09aeb6f5f5336beb205d7f720371bc927cd46c21922e334d47ba264acb5ba4",
+        "size": 6
+      },
+      "recorded": {
+        "preview": "HELLO\n",
+        "sha256": "3b09aeb6f5f5336beb205d7f720371bc927cd46c21922e334d47ba264acb5ba4",
+        "size": 6
+      }
+    },
+    "witness": {
+      "match": true,
+      "observed": "18e336cb25435b062f74d01eed443499400dc3640ae329705abd73c16509b823",
+      "recorded": "18e336cb25435b062f74d01eed443499400dc3640ae329705abd73c16509b823"
+    }
+  },
+  "integrity": "ok",
+  "profile": "comparable",
+  "reasons": [],
+  "repeats": 2,
+  "verdict": "REPRODUCED"
+}
+>>
+STDERR<<
+
+>>
+### 05 doctor A :: doctor a.bugjar --json
+rc=0
+STDOUT<<
+{
+  "action": "doctor",
+  "cassette": "a.bugjar",
+  "caveats": [],
+  "comparable": true,
+  "format": "bugjar/1",
+  "inputs": 10,
+  "integrity": "ok",
+  "integrity_problems": [],
+  "mismatches": [],
+  "signed": false
+}
+>>
+STDERR<<
+
+>>
+### 06 explain A :: explain a.bugjar
+rc=0
+STDOUT<<
+# Cassette <ID16>
+
+Command: `/usr/bin/python3 probe.py` [evidence: command.argv]
+Recorded: <TS> [evidence: created_utc = <TS>]
+
+## Observation
+
+Exit code: 0 [evidence: observation.exit_code = 0]
+stdout: 6 bytes, sha256 3b09aeb6f5f5336beb205d7f720371bc927cd46c21922e334d47ba264acb5ba4 [evidence: observation.stdout]
+stderr: 0 bytes, sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 [evidence: observation.stderr]
+created files: 1 [evidence: observation.created has 1 keys]
+modified files: 0 [evidence: observation.modified has 0 keys]
+deleted files: 0 [evidence: observation.deleted has 0 items]
+witness: 18e336cb25435b062f74d01eed443499400dc3640ae329705abd73c16509b823 [evidence: observation.witness]
+
+## Environment
+
+variables recorded: 7 [evidence: environment.vars has 7 keys]
+redactions: 0 [evidence: environment.redactions]
+
+## Caveats
+
+- none recorded [evidence: caveats = []]
+
+## Integrity
+
+root: <ROOT> [evidence: integrity.root]
+signed: no [evidence: signature = null]
+The network and the wall clock are outside the recorded model. [evidence: caveats and SECURITY.md]
+>>
+STDERR<<
+
+>>
+### 07 shrink A :: shrink a.bugjar --out a.min.bugjar --budget 120 --json
+rc=0
+STDOUT<<
+{
+  "action": "shrink",
+  "budget": 120,
+  "kept_units": [
+    "data.txt",
+    "probe.py"
+  ],
+  "oracle_calls": 32,
+  "out": "a.min.bugjar",
+  "parent_units": 17,
+  "removed_units": [
+    "env:LANG",
+    "env:LC_ALL",
+    "env:PATH",
+    "env:PYTHONHASHSEED",
+    "env:PYTHONIOENCODING",
+    "env:SOURCE_DATE_EPOCH",
+    "env:TZ",
+    "noise_0.txt",
+    "noise_1.txt",
+    "noise_2.txt",
+    "noise_3.txt",
+    "noise_4.txt",
+    "noise_5.txt",
+    "noise_6.txt",
+    "noise_7.txt"
+  ],
+  "reverified": true,
+  "signature_channels": [
+    "exit_code",
+    "stderr",
+    "stdout"
+  ],
+  "verdict": "SHRUNK",
+  "verification": "REPRODUCED"
+}
+>>
+STDERR<<
+
+>>
+### 08 verify A.min :: verify a.min.bugjar --json
+rc=0
+STDOUT<<
+{
+  "action": "verify",
+  "cassette": "a.min.bugjar",
+  "caveats": [],
+  "channels": {
+    "created": {
+      "match": true,
+      "observed": {
+        "result.txt": "3733cd977ff8eb18b987357e22ced99f46097f31ecb239e878ae63760e83e4d5"
+      },
+      "recorded": {
+        "result.txt": "3733cd977ff8eb18b987357e22ced99f46097f31ecb239e878ae63760e83e4d5"
+      }
+    },
+    "deleted": {
+      "match": true,
+      "observed": [],
+      "recorded": []
+    },
+    "exit_code": {
+      "match": true,
+      "observed": 0,
+      "recorded": 0
+    },
+    "modified": {
+      "match": true,
+      "observed": {},
+      "recorded": {}
+    },
+    "stderr": {
+      "match": true,
+      "observed": {
+        "preview": "",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size": 0
+      },
+      "recorded": {
+        "preview": "",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size": 0
+      }
+    },
+    "stdout": {
+      "match": true,
+      "observed": {
+        "preview": "HELLO\n",
+        "sha256": "3b09aeb6f5f5336beb205d7f720371bc927cd46c21922e334d47ba264acb5ba4",
+        "size": 6
+      },
+      "recorded": {
+        "preview": "HELLO\n",
+        "sha256": "3b09aeb6f5f5336beb205d7f720371bc927cd46c21922e334d47ba264acb5ba4",
+        "size": 6
+      }
+    },
+    "witness": {
+      "match": true,
+      "observed": "f3cf1881d1e65eff0eaeadabb2eff7b0684b3e58072aceeb9b04139e70eab4de",
+      "recorded": "f3cf1881d1e65eff0eaeadabb2eff7b0684b3e58072aceeb9b04139e70eab4de"
+    }
+  },
+  "integrity": "ok",
+  "profile": "comparable",
+  "reasons": [],
+  "repeats": 1,
+  "verdict": "REPRODUCED"
+}
+>>
+STDERR<<
+
+>>
+### 09 explain A.min :: explain a.min.bugjar
+rc=0
+STDOUT<<
+# Cassette <ID16>
+
+Command: `/usr/bin/python3 probe.py` [evidence: command.argv]
+Recorded: <TS> [evidence: created_utc = <TS>]
+
+## Observation
+
+Exit code: 0 [evidence: observation.exit_code = 0]
+stdout: 6 bytes, sha256 3b09aeb6f5f5336beb205d7f720371bc927cd46c21922e334d47ba264acb5ba4 [evidence: observation.stdout]
+stderr: 0 bytes, sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 [evidence: observation.stderr]
+created files: 1 [evidence: observation.created has 1 keys]
+modified files: 0 [evidence: observation.modified has 0 keys]
+deleted files: 0 [evidence: observation.deleted has 0 items]
+witness: f3cf1881d1e65eff0eaeadabb2eff7b0684b3e58072aceeb9b04139e70eab4de [evidence: observation.witness]
+
+## Environment
+
+variables recorded: 6 [evidence: environment.vars has 6 keys]
+redactions: 0 [evidence: environment.redactions]
+
+## Caveats
+
+- none recorded [evidence: caveats = []]
+
+## Integrity
+
+root: <ROOT> [evidence: integrity.root]
+signed: no [evidence: signature = null]
+The network and the wall clock are outside the recorded model. [evidence: caveats and SECURITY.md]
+
+## Lineage
+
+parent: <ID16> [evidence: lineage.parent]
+kept units: 2 [evidence: lineage.kept_units]
+oracle calls: 32 [evidence: lineage.oracle_calls]
+>>
+STDERR<<
+
+>>
+### 10 doctor A.min :: doctor a.min.bugjar --json
+rc=0
+STDOUT<<
+{
+  "action": "doctor",
+  "cassette": "a.min.bugjar",
+  "caveats": [],
+  "comparable": true,
+  "format": "bugjar/1",
+  "inputs": 2,
+  "integrity": "ok",
+  "integrity_problems": [],
+  "mismatches": [],
+  "signed": false
+}
+>>
+STDERR<<
+
+>>
+### 11 run B :: run --root worldB --out b.bugjar --json -- /usr/bin/python3 probe.py
+rc=0
+STDOUT<<
+{
+  "action": "run",
+  "cassette_id": "<ID>",
+  "caveats": 0,
+  "inputs": 10,
+  "observation": {
+    "created": 1,
+    "deleted": 0,
+    "exit_code": 0,
+    "modified": 0,
+    "stderr_bytes": 0,
+    "stdout_bytes": 6
+  },
+  "out": "b.bugjar",
+  "redactions": 0,
+  "signed": false
+}
+>>
+STDERR<<
+
+>>
+### 12 diff A B :: diff a.bugjar b.bugjar --json
+rc=0
+STDOUT<<
+{
+  "a": "a.bugjar",
+  "action": "diff",
+  "b": "b.bugjar",
+  "cassette_a": "<ID16>",
+  "cassette_b": "<ID16>",
+  "change_count": 5,
+  "changes": [
+    {
+      "a": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824",
+      "b": "486ea46224d1bb4fb680f34f7c9ad96a8f24ec88be73ea8e5a6c65260e9cb8a7",
+      "path": "inputs[0].sha256"
+    },
+    {
+      "a": "3733cd977ff8eb18b987357e22ced99f46097f31ecb239e878ae63760e83e4d5",
+      "b": "d7b0bbea3a935222c4198c38e30b2eb3e111d11dea87fa53547eac1c8a4ff03b",
+      "path": "observation.created.result.txt"
+    },
+    {
+      "a": "HELLO\n",
+      "b": "WORLD\n",
+      "path": "observation.stdout.preview"
+    },
+    {
+      "a": "3b09aeb6f5f5336beb205d7f720371bc927cd46c21922e334d47ba264acb5ba4",
+      "b": "5ece97172554920a9872271d89d6087ce5633c2e2c93d4b5fac0ac7d4a083ad2",
+      "path": "observation.stdout.sha256"
+    },
+    {
+      "a": "18e336cb25435b062f74d01eed443499400dc3640ae329705abd73c16509b823",
+      "b": "9dbfa25976ab7feecdaeb3706a5db3f4d724afd6903900c5eea2eb733010f608",
+      "path": "observation.witness"
+    }
+  ]
+}
+>>
+STDERR<<
+
+>>
+### 13 diff A A :: diff a.bugjar a.bugjar --json
+rc=0
+STDOUT<<
+{
+  "a": "a.bugjar",
+  "action": "diff",
+  "b": "a.bugjar",
+  "cassette_a": "<ID16>",
+  "cassette_b": "<ID16>",
+  "change_count": 0,
+  "changes": []
+}
+>>
+STDERR<<
+
+>>
+### 14 explain B :: explain b.bugjar
+rc=0
+STDOUT<<
+# Cassette <ID16>
+
+Command: `/usr/bin/python3 probe.py` [evidence: command.argv]
+Recorded: <TS> [evidence: created_utc = <TS>]
+
+## Observation
+
+Exit code: 0 [evidence: observation.exit_code = 0]
+stdout: 6 bytes, sha256 5ece97172554920a9872271d89d6087ce5633c2e2c93d4b5fac0ac7d4a083ad2 [evidence: observation.stdout]
+stderr: 0 bytes, sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 [evidence: observation.stderr]
+created files: 1 [evidence: observation.created has 1 keys]
+modified files: 0 [evidence: observation.modified has 0 keys]
+deleted files: 0 [evidence: observation.deleted has 0 items]
+witness: 9dbfa25976ab7feecdaeb3706a5db3f4d724afd6903900c5eea2eb733010f608 [evidence: observation.witness]
+
+## Environment
+
+variables recorded: 7 [evidence: environment.vars has 7 keys]
+redactions: 0 [evidence: environment.redactions]
+
+## Caveats
+
+- none recorded [evidence: caveats = []]
+
+## Integrity
+
+root: <ROOT> [evidence: integrity.root]
+signed: no [evidence: signature = null]
+The network and the wall clock are outside the recorded model. [evidence: caveats and SECURITY.md]
+>>
+STDERR<<
+
+>>
+### 15 run boom :: run --root boom --out boom.bugjar --json -- /usr/bin/python3 probe.py
+rc=0
+STDOUT<<
+{
+  "action": "run",
+  "cassette_id": "<ID>",
+  "caveats": 0,
+  "inputs": 10,
+  "observation": {
+    "created": 0,
+    "deleted": 0,
+    "exit_code": 3,
+    "modified": 0,
+    "stderr_bytes": 14,
+    "stdout_bytes": 0
+  },
+  "out": "boom.bugjar",
+  "redactions": 0,
+  "signed": false
+}
+>>
+STDERR<<
+
+>>
+### 16 verify boom :: verify boom.bugjar --json
+rc=0
+STDOUT<<
+{
+  "action": "verify",
+  "cassette": "boom.bugjar",
+  "caveats": [],
+  "channels": {
+    "created": {
+      "match": true,
+      "observed": {},
+      "recorded": {}
+    },
+    "deleted": {
+      "match": true,
+      "observed": [],
+      "recorded": []
+    },
+    "exit_code": {
+      "match": true,
+      "observed": 3,
+      "recorded": 3
+    },
+    "modified": {
+      "match": true,
+      "observed": {},
+      "recorded": {}
+    },
+    "stderr": {
+      "match": true,
+      "observed": {
+        "preview": "boom detected\n",
+        "sha256": "c4345e4440738e4e4639c1ade17a3e03274114eb04c93d55f0d38e66457aae73",
+        "size": 14
+      },
+      "recorded": {
+        "preview": "boom detected\n",
+        "sha256": "c4345e4440738e4e4639c1ade17a3e03274114eb04c93d55f0d38e66457aae73",
+        "size": 14
+      }
+    },
+    "stdout": {
+      "match": true,
+      "observed": {
+        "preview": "",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size": 0
+      },
+      "recorded": {
+        "preview": "",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size": 0
+      }
+    },
+    "witness": {
+      "match": true,
+      "observed": "9744810d36bb033d4e686f68fdbbd1b63f8d707682f2f18036d92bfc61db899e",
+      "recorded": "9744810d36bb033d4e686f68fdbbd1b63f8d707682f2f18036d92bfc61db899e"
+    }
+  },
+  "integrity": "ok",
+  "profile": "comparable",
+  "reasons": [],
+  "repeats": 1,
+  "verdict": "REPRODUCED"
+}
+>>
+STDERR<<
+
+>>
+### 17 shrink boom :: shrink boom.bugjar --out boom.min.bugjar --budget 120 --json
+rc=0
+STDOUT<<
+{
+  "action": "shrink",
+  "budget": 120,
+  "kept_units": [
+    "data.txt",
+    "probe.py"
+  ],
+  "oracle_calls": 32,
+  "out": "boom.min.bugjar",
+  "parent_units": 17,
+  "removed_units": [
+    "env:LANG",
+    "env:LC_ALL",
+    "env:PATH",
+    "env:PYTHONHASHSEED",
+    "env:PYTHONIOENCODING",
+    "env:SOURCE_DATE_EPOCH",
+    "env:TZ",
+    "noise_0.txt",
+    "noise_1.txt",
+    "noise_2.txt",
+    "noise_3.txt",
+    "noise_4.txt",
+    "noise_5.txt",
+    "noise_6.txt",
+    "noise_7.txt"
+  ],
+  "reverified": true,
+  "signature_channels": [
+    "exit_code",
+    "stderr",
+    "stdout"
+  ],
+  "verdict": "SHRUNK",
+  "verification": "REPRODUCED"
+}
+>>
+STDERR<<
+
+>>
+### 18 verify boom.min :: verify boom.min.bugjar --json
+rc=0
+STDOUT<<
+{
+  "action": "verify",
+  "cassette": "boom.min.bugjar",
+  "caveats": [],
+  "channels": {
+    "created": {
+      "match": true,
+      "observed": {},
+      "recorded": {}
+    },
+    "deleted": {
+      "match": true,
+      "observed": [],
+      "recorded": []
+    },
+    "exit_code": {
+      "match": true,
+      "observed": 3,
+      "recorded": 3
+    },
+    "modified": {
+      "match": true,
+      "observed": {},
+      "recorded": {}
+    },
+    "stderr": {
+      "match": true,
+      "observed": {
+        "preview": "boom detected\n",
+        "sha256": "c4345e4440738e4e4639c1ade17a3e03274114eb04c93d55f0d38e66457aae73",
+        "size": 14
+      },
+      "recorded": {
+        "preview": "boom detected\n",
+        "sha256": "c4345e4440738e4e4639c1ade17a3e03274114eb04c93d55f0d38e66457aae73",
+        "size": 14
+      }
+    },
+    "stdout": {
+      "match": true,
+      "observed": {
+        "preview": "",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size": 0
+      },
+      "recorded": {
+        "preview": "",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size": 0
+      }
+    },
+    "witness": {
+      "match": true,
+      "observed": "91510ca8b9962bcf8c113911ee9df028b4bff0936c9745cbe80b702d3241acca",
+      "recorded": "91510ca8b9962bcf8c113911ee9df028b4bff0936c9745cbe80b702d3241acca"
+    }
+  },
+  "integrity": "ok",
+  "profile": "comparable",
+  "reasons": [],
+  "repeats": 1,
+  "verdict": "REPRODUCED"
+}
+>>
+STDERR<<
+
+>>
+### 19 run signed :: run --root worldA --out s.bugjar --json --sign key.bin -- /usr/bin/python3 probe.py
+rc=0
+STDOUT<<
+{
+  "action": "run",
+  "cassette_id": "<ID>",
+  "caveats": 0,
+  "inputs": 10,
+  "observation": {
+    "created": 1,
+    "deleted": 0,
+    "exit_code": 0,
+    "modified": 0,
+    "stderr_bytes": 0,
+    "stdout_bytes": 6
+  },
+  "out": "s.bugjar",
+  "redactions": 0,
+  "signed": true
+}
+>>
+STDERR<<
+
+>>
+### 20 verify signed good key :: verify s.bugjar --json --key key.bin
+rc=0
+STDOUT<<
+{
+  "action": "verify",
+  "cassette": "s.bugjar",
+  "caveats": [],
+  "channels": {
+    "created": {
+      "match": true,
+      "observed": {
+        "result.txt": "3733cd977ff8eb18b987357e22ced99f46097f31ecb239e878ae63760e83e4d5"
+      },
+      "recorded": {
+        "result.txt": "3733cd977ff8eb18b987357e22ced99f46097f31ecb239e878ae63760e83e4d5"
+      }
+    },
+    "deleted": {
+      "match": true,
+      "observed": [],
+      "recorded": []
+    },
+    "exit_code": {
+      "match": true,
+      "observed": 0,
+      "recorded": 0
+    },
+    "modified": {
+      "match": true,
+      "observed": {},
+      "recorded": {}
+    },
+    "stderr": {
+      "match": true,
+      "observed": {
+        "preview": "",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size": 0
+      },
+      "recorded": {
+        "preview": "",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size": 0
+      }
+    },
+    "stdout": {
+      "match": true,
+      "observed": {
+        "preview": "HELLO\n",
+        "sha256": "3b09aeb6f5f5336beb205d7f720371bc927cd46c21922e334d47ba264acb5ba4",
+        "size": 6
+      },
+      "recorded": {
+        "preview": "HELLO\n",
+        "sha256": "3b09aeb6f5f5336beb205d7f720371bc927cd46c21922e334d47ba264acb5ba4",
+        "size": 6
+      }
+    },
+    "witness": {
+      "match": true,
+      "observed": "18e336cb25435b062f74d01eed443499400dc3640ae329705abd73c16509b823",
+      "recorded": "18e336cb25435b062f74d01eed443499400dc3640ae329705abd73c16509b823"
+    }
+  },
+  "integrity": "ok",
+  "profile": "comparable",
+  "reasons": [],
+  "repeats": 1,
+  "verdict": "REPRODUCED"
+}
+>>
+STDERR<<
+
+>>
+### 21 verify signed bad key :: verify s.bugjar --json --key wrong.bin
+rc=2
+STDOUT<<
+{
+  "action": "verify",
+  "cassette": "s.bugjar",
+  "caveats": [],
+  "channels": {},
+  "integrity": "failed",
+  "profile": "unknown",
+  "reasons": [
+    "cassette load failed: signature verification failed"
+  ],
+  "repeats": 1,
+  "verdict": "UNVERIFIABLE"
+}
+>>
+STDERR<<
+
+>>
+### 22 doctor signed no key :: doctor s.bugjar --json
+rc=3
+STDOUT<<
+
+>>
+STDERR<<
+bugjar: cassette is signed but no --key was supplied
+>>
+### 23 run with secret env :: run --root worldA --out sec.bugjar --json --env BUGJAR_GOLDEN_SECRET -- /usr/bin/python3 probe.py
+rc=0
+STDOUT<<
+{
+  "action": "run",
+  "cassette_id": "<ID>",
+  "caveats": 0,
+  "inputs": 10,
+  "observation": {
+    "created": 1,
+    "deleted": 0,
+    "exit_code": 0,
+    "modified": 0,
+    "stderr_bytes": 0,
+    "stdout_bytes": 6
+  },
+  "out": "sec.bugjar",
+  "redactions": 1,
+  "signed": false
+}
+>>
+STDERR<<
+
+>>
+### 24 verify secret env :: verify sec.bugjar --json
+rc=2
+STDOUT<<
+{
+  "action": "verify",
+  "cassette": "sec.bugjar",
+  "caveats": [],
+  "channels": {},
+  "integrity": "ok",
+  "profile": "comparable",
+  "reasons": [
+    "1 environment value(s) were redacted at capture; replay cannot be faithful. Use --allow-redacted to accept a weakened verdict."
+  ],
+  "repeats": 1,
+  "verdict": "UNVERIFIABLE"
+}
+>>
+STDERR<<
+
+>>
+### 25 verify secret env allowed :: verify sec.bugjar --json --allow-redacted
+rc=0
+STDOUT<<
+{
+  "action": "verify",
+  "cassette": "sec.bugjar",
+  "caveats": [
+    "redacted variables were allowed: replay is not faithful to the original world",
+    "verdict is weakened by --allow-redacted"
+  ],
+  "channels": {
+    "created": {
+      "match": true,
+      "observed": {
+        "result.txt": "3733cd977ff8eb18b987357e22ced99f46097f31ecb239e878ae63760e83e4d5"
+      },
+      "recorded": {
+        "result.txt": "3733cd977ff8eb18b987357e22ced99f46097f31ecb239e878ae63760e83e4d5"
+      }
+    },
+    "deleted": {
+      "match": true,
+      "observed": [],
+      "recorded": []
+    },
+    "exit_code": {
+      "match": true,
+      "observed": 0,
+      "recorded": 0
+    },
+    "modified": {
+      "match": true,
+      "observed": {},
+      "recorded": {}
+    },
+    "stderr": {
+      "match": true,
+      "observed": {
+        "preview": "",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size": 0
+      },
+      "recorded": {
+        "preview": "",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size": 0
+      }
+    },
+    "stdout": {
+      "match": true,
+      "observed": {
+        "preview": "HELLO\n",
+        "sha256": "3b09aeb6f5f5336beb205d7f720371bc927cd46c21922e334d47ba264acb5ba4",
+        "size": 6
+      },
+      "recorded": {
+        "preview": "HELLO\n",
+        "sha256": "3b09aeb6f5f5336beb205d7f720371bc927cd46c21922e334d47ba264acb5ba4",
+        "size": 6
+      }
+    },
+    "witness": {
+      "match": true,
+      "observed": "72010bd7178b81e7603214afece9e7efdb5da358f35eff4b467c3533407ffacf",
+      "recorded": "72010bd7178b81e7603214afece9e7efdb5da358f35eff4b467c3533407ffacf"
+    }
+  },
+  "integrity": "ok",
+  "profile": "comparable",
+  "reasons": [],
+  "repeats": 1,
+  "verdict": "REPRODUCED"
+}
+>>
+STDERR<<
+
+>>
+### 26 run with stdin :: run --root worldA --stdin stdin.txt --out stdin.bugjar --json -- /usr/bin/python3 probe.py
+rc=0
+STDOUT<<
+{
+  "action": "run",
+  "cassette_id": "<ID>",
+  "caveats": 0,
+  "inputs": 10,
+  "observation": {
+    "created": 1,
+    "deleted": 0,
+    "exit_code": 0,
+    "modified": 0,
+    "stderr_bytes": 0,
+    "stdout_bytes": 6
+  },
+  "out": "stdin.bugjar",
+  "redactions": 0,
+  "signed": false
+}
+>>
+STDERR<<
+
+>>
+### 27 verify stdin :: verify stdin.bugjar --json
+rc=0
+STDOUT<<
+{
+  "action": "verify",
+  "cassette": "stdin.bugjar",
+  "caveats": [],
+  "channels": {
+    "created": {
+      "match": true,
+      "observed": {
+        "result.txt": "3733cd977ff8eb18b987357e22ced99f46097f31ecb239e878ae63760e83e4d5"
+      },
+      "recorded": {
+        "result.txt": "3733cd977ff8eb18b987357e22ced99f46097f31ecb239e878ae63760e83e4d5"
+      }
+    },
+    "deleted": {
+      "match": true,
+      "observed": [],
+      "recorded": []
+    },
+    "exit_code": {
+      "match": true,
+      "observed": 0,
+      "recorded": 0
+    },
+    "modified": {
+      "match": true,
+      "observed": {},
+      "recorded": {}
+    },
+    "stderr": {
+      "match": true,
+      "observed": {
+        "preview": "",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size": 0
+      },
+      "recorded": {
+        "preview": "",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size": 0
+      }
+    },
+    "stdout": {
+      "match": true,
+      "observed": {
+        "preview": "HELLO\n",
+        "sha256": "3b09aeb6f5f5336beb205d7f720371bc927cd46c21922e334d47ba264acb5ba4",
+        "size": 6
+      },
+      "recorded": {
+        "preview": "HELLO\n",
+        "sha256": "3b09aeb6f5f5336beb205d7f720371bc927cd46c21922e334d47ba264acb5ba4",
+        "size": 6
+      }
+    },
+    "witness": {
+      "match": true,
+      "observed": "2f3d4e73f966e91c062ba814b7200c5a18138ee741c51a539f0c3543284f063b",
+      "recorded": "2f3d4e73f966e91c062ba814b7200c5a18138ee741c51a539f0c3543284f063b"
+    }
+  },
+  "integrity": "ok",
+  "profile": "comparable",
+  "reasons": [],
+  "repeats": 1,
+  "verdict": "REPRODUCED"
+}
+>>
+STDERR<<
+
+>>
+### 28 shrink budget1 :: shrink a.bugjar --out never.bugjar --budget 1 --json
+rc=2
+STDOUT<<
+{
+  "action": "shrink",
+  "budget": 1,
+  "oracle_calls": 2,
+  "out": "never.bugjar",
+  "reason": "replay budget exhausted before 1-minimality",
+  "verdict": "BUDGET_EXHAUSTED"
+}
+>>
+STDERR<<
+
+>>
+### 29 run missing command :: run --root worldA --out x.bugjar --json --
+rc=3
+STDOUT<<
+
+>>
+STDERR<<
+bugjar: empty command: pass a command after --
+>>
+### 30 verify nonexistent :: verify nope.bugjar --json
+rc=2
+STDOUT<<
+{
+  "action": "verify",
+  "cassette": "nope.bugjar",
+  "caveats": [],
+  "channels": {},
+  "integrity": "failed",
+  "profile": "unknown",
+  "reasons": [
+    "cassette load failed: cassette not found: nope.bugjar"
+  ],
+  "repeats": 1,
+  "verdict": "UNVERIFIABLE"
+}
+>>
+STDERR<<
+
+>>
+### 31 verify corrupt :: verify corrupt.bugjar --json
+rc=2
+STDOUT<<
+{
+  "action": "verify",
+  "cassette": "corrupt.bugjar",
+  "caveats": [],
+  "channels": {},
+  "integrity": "failed",
+  "profile": "unknown",
+  "reasons": [
+    "cassette load failed: cannot read cassette: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+  ],
+  "repeats": 1,
+  "verdict": "UNVERIFIABLE"
+}
+>>
+STDERR<<
+
+>>
+### 32 explain corrupt :: explain corrupt.bugjar
+rc=3
+STDOUT<<
+
+>>
+STDERR<<
+bugjar: cannot read cassette: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)
+>>
+### 33 verify truncated :: verify trunc.bugjar --json
+rc=2
+STDOUT<<
+{
+  "action": "verify",
+  "cassette": "trunc.bugjar",
+  "caveats": [],
+  "channels": {},
+  "integrity": "failed",
+  "profile": "unknown",
+  "reasons": [
+    "cassette load failed: not a valid zip cassette: File is not a zip file"
+  ],
+  "repeats": 1,
+  "verdict": "UNVERIFIABLE"
+}
+>>
+STDERR<<
+
+>>
+### 34 doctor truncated :: doctor trunc.bugjar --json
+rc=3
+STDOUT<<
+
+>>
+STDERR<<
+bugjar: not a valid zip cassette: File is not a zip file
+>>
